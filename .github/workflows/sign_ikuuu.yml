@@ -8,6 +8,7 @@ on:
 jobs:
   sign_in_job:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Repository
@@ -32,6 +33,7 @@ jobs:
       - name: Run sign-in script
         env:
           ACCOUNTS: ${{ secrets.ACCOUNTS }}
+          IKUUU_COOKIES: ${{ secrets.IKUUU_COOKIES }}
           WX_CORPID: ${{ secrets.WX_CORPID }}
           WX_CORPSECRET: ${{ secrets.WX_CORPSECRET }}
           WX_AGENTID: ${{ secrets.WX_AGENTID }}
