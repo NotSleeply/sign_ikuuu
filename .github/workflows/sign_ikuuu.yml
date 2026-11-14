@@ -29,13 +29,32 @@ jobs:
       - name: Select sign-in method
         id: method
         env:
+          TELEGRAM_WEB_SESSION: ${{ secrets.TELEGRAM_WEB_SESSION }}
           TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
         run: |
-          if [[ -n "$TELEGRAM_SESSION" ]]; then
+          if [[ -n "$TELEGRAM_WEB_SESSION" ]]; then
+            echo 'backend=telegram-web' >> "$GITHUB_OUTPUT"
+          elif [[ -n "$TELEGRAM_SESSION" ]]; then
             echo 'backend=telegram' >> "$GITHUB_OUTPUT"
           else
             echo 'backend=website' >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Install Telegram Web dependencies
+        if: steps.method.outputs.backend == 'telegram-web'
+        run: |
+          pip install -r requirements-telegram-web.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Test Telegram Web sign-in logic
+        if: steps.method.outputs.backend == 'telegram-web'
+        run: python -m unittest -v test_telegram_web_signin
+
+      - name: Run Telegram Web sign-in
+        if: steps.method.outputs.backend == 'telegram-web'
+        env:
+          TELEGRAM_WEB_SESSION: ${{ secrets.TELEGRAM_WEB_SESSION }}
+        run: python telegram_web_signin.py
 
       - name: Install Telegram dependencies
         if: steps.method.outputs.backend == 'telegram'

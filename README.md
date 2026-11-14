@@ -5,6 +5,32 @@
 ### 首次配置
 
 1. 在网站「我的账号」→「绑定 Telegram 账号」完成绑定。向机器人发送 `/checkin`，确认返回签到成功或今天已签到。
+2. 本机安装 Python、GitHub CLI，使用 `gh auth login` 登录仓库所属账号，再安装登录助手依赖和浏览器：
+
+```powershell
+python -m pip install -r requirements-telegram-web.txt
+python -m playwright install chromium
+```
+
+运行官方 Telegram Web 扫码登录助手，不需要申请 Telegram API 应用：
+
+```powershell
+python login_telegram_web.py --repo NotSleeply/sign_ikuuu
+```
+
+在弹出的官方 Telegram Web 页面选择二维码登录，用手机 Telegram 的「设置 → 设备 → 关联桌面设备」扫码。如开启两步验证，在官方页面输入密码。本机需要代理时，传入 `--proxy http://127.0.0.1:7890`；已有 Edge 可传入 `--channel msedge` 使用本机浏览器。
+
+助手关闭本机页面后，通过标准输入直接保存 `TELEGRAM_WEB_SESSION` GitHub Secret。会话不会打印或保存到仓库，也不导出聊天 IndexedDB 缓存。此会话具有 Telegram 账号访问权限，只能保存在 Secrets 中。
+
+配置完成后，定时任务每天北京时间 07:10 向官方机器人发送一次 `/checkin`。首次可在 Actions 页面手动运行「Auto Sign-in for BBS」验证；日志中应出现「Telegram Web 签到结果」。
+
+任务只接受本次命令发出后的机器人回复；未绑定、会话失效、超时或无法确认结果都会报错。该方式不依赖网站 Cookie 的有效期；Telegram 会话被撤销后，需要重新运行扫码助手。不要同时在其他机器长期使用导出的同一会话。
+
+### 可选：使用自己的 Telegram API 应用
+
+已取得自己 API 应用凭据时，也可以使用 Telethon：
+
+1. 完成网站与官方机器人的绑定。
 2. 登录 <https://my.telegram.org/apps>，在「API development tools」创建应用，取得自己的 `App api_id` 和 `App api_hash`。
 3. 本机安装 Python、GitHub CLI，使用 `gh auth login` 登录仓库所属账号，再安装登录助手依赖：
 
@@ -28,7 +54,7 @@ python login_telegram.py --repo NotSleeply/sign_ikuuu
 
 ## 网页签到
 
-未配置 `TELEGRAM_SESSION` 时继续使用下方的网页签到方式。
+任务按 `TELEGRAM_WEB_SESSION`、`TELEGRAM_SESSION`、网页签到的顺序选择方式。未配置两种 Telegram 会话时使用下方的网页签到方式；Telegram 模式失败时任务会报错，不会自动切换到网站登录。
 
 ### ✅ 第一步：Fork 本仓库
 
