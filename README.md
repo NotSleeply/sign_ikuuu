@@ -1,3 +1,35 @@
+## Telegram 自动签到
+
+已绑定 Telegram 的账号可以使用官方机器人 `@iKuuuu_VPN_bot` 签到。此方式不依赖网站的登录 Cookie，也不需要每天处理网站验证码。
+
+### 首次配置
+
+1. 在网站「我的账号」→「绑定 Telegram 账号」完成绑定。向机器人发送 `/checkin`，确认返回签到成功或今天已签到。
+2. 登录 <https://my.telegram.org/apps>，在「API development tools」创建应用，取得自己的 `App api_id` 和 `App api_hash`。
+3. 本机安装 Python、GitHub CLI，使用 `gh auth login` 登录仓库所属账号，再安装登录助手依赖：
+
+```powershell
+python -m pip install -r requirements-telegram.txt "qrcode[pil]" pysocks
+```
+
+运行登录助手：
+
+```powershell
+python login_telegram.py --repo NotSleeply/sign_ikuuu
+```
+
+输入应用凭据后，助手生成临时二维码，路径会显示在终端。用手机 Telegram 的「设置 → 设备 → 关联桌面设备」扫描；二维码到期后会自动刷新同一图片。如开启了 Telegram 两步验证，还需要输入两步验证密码。
+
+本机需要代理时，可给助手传入 `--proxy` 参数，协议支持 HTTP 和 SOCKS5。GitHub Actions 默认直接连接 Telegram。
+
+助手通过标准输入直接保存 `TELEGRAM_API_ID`、`TELEGRAM_API_HASH`、`TELEGRAM_SESSION` 三个 GitHub Secrets，不会输出会话内容或创建 `.session` 文件。登录会话就绪后，原定时任务自动改用 Telegram，每天北京时间 07:10 向官方机器人发送一次 `/checkin`。
+
+任务只接受本次命令发出后的机器人回复；未绑定、会话失效、超时或无法确认结果都会报错。Telegram 会话如果被撤销，需要重新运行登录助手。
+
+## 网页签到
+
+未配置 `TELEGRAM_SESSION` 时继续使用下方的网页签到方式。
+
 ### ✅ 第一步：Fork 本仓库
 
 打开本项目页面 → 点击右上角 Fork 按钮（复制到你自己的 GitHub 账号下）
